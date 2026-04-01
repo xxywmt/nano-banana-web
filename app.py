@@ -101,15 +101,20 @@ if st.button("生成示意图", type="primary"):
                     attempt = 0
 
                     while attempt < max_attempts:
-                        result_response = requests.post(
-                            "https://grsai.dakka.com.cn/v1/draw/result",
-                            headers={
-                                "Content-Type": "application/json",
-                                "Authorization": f"Bearer {API_KEY}"
-                            },
-                            json={"id": task_id},
-                            timeout=10
-                        )
+                        try:
+                            result_response = requests.post(
+                                "https://grsai.dakka.com.cn/v1/draw/result",
+                                headers={
+                                    "Content-Type": "application/json",
+                                    "Authorization": f"Bearer {API_KEY}"
+                                },
+                                json={"id": task_id},
+                                timeout=30
+                            )
+                        except requests.exceptions.Timeout:
+                            time.sleep(2)
+                            attempt += 1
+                            continue
 
                         result_data = result_response.json()["data"]
                         progress = result_data.get("progress", 0)
