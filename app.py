@@ -97,8 +97,10 @@ if st.button("生成示意图", type="primary"):
                     status_text = st.empty()
 
                     # 轮询结果
-                    max_attempts = 60
+                    max_attempts = 120  # 增加到 4 分钟
                     attempt = 0
+
+                    st.info(f"任务ID: {task_id}")
 
                     while attempt < max_attempts:
                         try:
@@ -112,14 +114,21 @@ if st.button("生成示意图", type="primary"):
                                 timeout=30
                             )
                         except requests.exceptions.Timeout:
+                            status_text.text(f"进度: 网络超时，重试中... (尝试 {attempt + 1}/{max_attempts})")
+                            time.sleep(2)
+                            attempt += 1
+                            continue
+                        except Exception as e:
+                            status_text.text(f"进度: 查询出错 ({str(e)})，重试中...")
                             time.sleep(2)
                             attempt += 1
                             continue
 
                         result_data = result_response.json()["data"]
                         progress = result_data.get("progress", 0)
+                        status = result_data.get("status", "unknown")
                         progress_bar.progress(progress / 100)
-                        status_text.text(f"进度: {progress}%")
+                        status_text.text(f"进度: {progress}% | 状态: {status} | 尝试: {attempt + 1}/{max_attempts}")
 
                         if result_data["status"] == "succeeded":
                             st.success("生成成功！")
@@ -136,6 +145,7 @@ if st.button("生成示意图", type="primary"):
                             break
                         elif result_data["status"] == "failed":
                             st.error(f"生成失败: {result_data.get('error', result_data.get('failure_reason'))}")
+                            st.json(result_data)  # 显示完整错误信息
                             break
 
                         time.sleep(2)
@@ -143,6 +153,8 @@ if st.button("生成示意图", type="primary"):
 
                     if attempt >= max_attempts:
                         st.error("生成超时，请重试")
+                        st.warning(f"最后状态: 进度 {progress}%, 状态 {status}")
+                        st.info("提示：复杂图形可能需要更长时间，请稍后使用任务ID查询结果")
                 else:
                     st.error(f"请求失败: {result.get('msg', '未知错误')}")
 
