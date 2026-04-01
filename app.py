@@ -97,7 +97,7 @@ if st.button("生成示意图", type="primary"):
                     status_text = st.empty()
 
                     # 轮询结果
-                    max_attempts = 120  # 增加到 4 分钟
+                    max_attempts = 90  # 3 分钟
                     attempt = 0
 
                     st.info(f"任务ID: {task_id}")
