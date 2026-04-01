@@ -19,10 +19,23 @@ if not API_KEY:
         st.warning("请先输入 API Key 才能使用")
         st.stop()
 
+# 高级 prompt 模板
+use_template = st.checkbox("使用高质量模板（推荐）", value=True)
+
+if use_template:
+    template_prefix = """Imagine a publication-quality scientific figure that infers the dominant figure type from the provided scientific context (e.g., mechanism, workflow, pathway, or experimental design). The figure should highlight biologically or experimentally central genes, proteins, complexes, domains, cellular compartments, interactions, and relevant parameters (e.g., temperature, time points, MOI, dosage, n), prioritizing clarity and mechanistic coherence while avoiding unsupported or speculative elements. Causal directionality should be explicit, and visual encoding consistent across panels. Apply a colorblind-friendly color logic consistent with Nature-family journals, assigning colors by functional role or biological state and using neutral tones for structural elements. The visual style should benchmark Nature / Cell, with clean professional typography and clear spatial organization. Output on a white background, legible at single-column width, at journal-ready high resolution, with modular panels compatible with Adobe Illustrator.
+
+"""
+    st.info("已启用高质量模板，将自动优化为期刊级别的科研示意图")
+else:
+    template_prefix = ""
+
 # 用户输入
-prompt = st.text_area("描述你想要的示意图",
+user_prompt = st.text_area("描述你想要的示意图",
     placeholder="例如：一个细胞内的信号转导通路，包含受体、激酶和转录因子",
     height=150)
+
+prompt = template_prefix + user_prompt if use_template else user_prompt
 
 # 参考图上传
 uploaded_file = st.file_uploader("上传参考图（可选）", type=["png", "jpg", "jpeg"])
@@ -50,7 +63,7 @@ with col3:
 
 # 生成按钮
 if st.button("生成示意图", type="primary"):
-    if not prompt:
+    if not user_prompt:
         st.error("请输入描述")
     else:
         with st.spinner("生成中..."):
