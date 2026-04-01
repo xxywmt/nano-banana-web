@@ -86,7 +86,7 @@ if st.button("生成示意图", type="primary"):
                         "Authorization": f"Bearer {API_KEY}"
                     },
                     json=payload,
-                    timeout=30
+                    timeout=60
                 )
 
                 result = response.json()
@@ -97,7 +97,7 @@ if st.button("生成示意图", type="primary"):
                     status_text = st.empty()
 
                     # 轮询结果
-                    max_attempts = 90  # 3 分钟
+                    max_attempts = 15  # 5 分钟 (15 次 × 20 秒)
                     attempt = 0
 
                     st.info(f"任务ID: {task_id}")
@@ -115,12 +115,12 @@ if st.button("生成示意图", type="primary"):
                             )
                         except requests.exceptions.Timeout:
                             status_text.text(f"进度: 网络超时，重试中... (尝试 {attempt + 1}/{max_attempts})")
-                            time.sleep(2)
+                            time.sleep(20)
                             attempt += 1
                             continue
                         except Exception as e:
                             status_text.text(f"进度: 查询出错 ({str(e)})，重试中...")
-                            time.sleep(2)
+                            time.sleep(20)
                             attempt += 1
                             continue
 
@@ -148,7 +148,7 @@ if st.button("生成示意图", type="primary"):
                             st.json(result_data)  # 显示完整错误信息
                             break
 
-                        time.sleep(2)
+                        time.sleep(20)
                         attempt += 1
 
                     if attempt >= max_attempts:
